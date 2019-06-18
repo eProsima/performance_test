@@ -41,17 +41,11 @@ class Instance:
         :param operation_type: Type of the operation
         """
         topics = [
-            'Array1k', 'Array4k', 'Array16k', 'Array32k', 'Array60k',
-            'Array1m', 'Array2m', 'Struct16', 'Struct256', 'Struct4k',
-            'Struct32k', 'PointCloud512k', 'PointCloud1m', 'PointCloud2m',
-            'PointCloud4m', 'Range', 'NavSatFix', 'RadarDetection',
-            'RadarTrack'
+            'Array16k', 'Array2m', 'Struct32k', 'PointCloud1m', 'PointCloud4m'
         ]
 
         rates = ['20', '50', '1000']
-
         num_subs = ['1', '3', '10']
-
         reliability = ['', '--reliable']
         durability = ['', '--transient']
 
@@ -92,7 +86,7 @@ class Instance:
             contain.
         :return: The command line argument to execute the performance test.
         """
-        command = 'ros2 run  performance_test perf_test'
+        command = 'ros2 run performance_test perf_test'
 
         c = list(self.product[index])
 
@@ -110,7 +104,7 @@ class Instance:
 
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        fixed_args = ' --communication ROS2 '
+        fixed_args = ' --communication FastRTPS --keep_last '
         dyn_args = "-l '{}/log' --topic {} --rate {} -s {} {} {}".format(
             dir_name, c[0], c[1], c[2], c[3], c[4]
         )
