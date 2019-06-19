@@ -193,8 +193,7 @@ def timer_handler(sig=None, frame=None):
 
 
 if __name__ == '__main__':
-    # experiment_length = 120  # In seconds
-    experiment_length = 1  # In seconds
+    experiment_length = 120  # In seconds
 
     # Flag to evaluate whether is the first time and therefore no process
     # is running or we should kill the running processes
