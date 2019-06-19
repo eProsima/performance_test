@@ -6,3 +6,5 @@ cmake-build-debug
 build
 log
 install
+.vscode/settings.json
+performance_test/helper_scripts/.vscode/settings.json
