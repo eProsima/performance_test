@@ -97,7 +97,7 @@ class Instance:
         """
         command = 'ros2 run performance_test perf_test'
         fixed_args = ('--communication FastRTPS --keep_last ' +
-                      '--use_rt_cpus 238 --use_rt_prio 90')
+                      '--use_rt_cpus 238 --use_rt_prio 49')
 
         c = list(self.product[index])  # List of arguments for this job
 
