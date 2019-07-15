@@ -60,12 +60,12 @@ eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
   eprosima::fastrtps::xmlparser::XMLProfileManager::getDefaultParticipantAttributes(PParam);
   PParam.rtps.sendSocketBufferSize = 1048576;
   PParam.rtps.listenSocketBufferSize = 4194304;
-  PParam.rtps.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
-  PParam.rtps.builtin.use_SIMPLE_EndpointDiscoveryProtocol = true;
-  PParam.rtps.builtin.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-  PParam.rtps.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+  PParam.rtps.builtin.discovery_config.discoveryProtocol = eprosima::fastrtps::rtps::DiscoveryProtocol::SIMPLE;
+  PParam.rtps.builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
+  PParam.rtps.builtin.discovery_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+  PParam.rtps.builtin.discovery_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
   PParam.rtps.builtin.domainId = m_ec.dds_domain_id();
-  PParam.rtps.builtin.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
+  PParam.rtps.builtin.discovery_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
   PParam.rtps.setName("performance_test_fastRTPS");
 
   if (!m_ec.use_single_participant()) {
