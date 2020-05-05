@@ -471,6 +471,38 @@ public:
   }
 };
 
+class Array4m
+{
+public:
+  using RosType = performance_test::msg::Array4m;
+
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  using EprosimaTopicType = performance_test_msgs::msg::dds_::Array4m_PubSubType;
+  using EprosimaType = typename EprosimaTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msgs_msg_dds__Array4m_;
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
+  {
+    return performance_test_msgs_msg_dds__Array4m_TypePlugin_get();
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array4m_;
+  static const dds_topic_descriptor_t * CycloneDDSDesc()
+  {
+    return &performance_test_msgs_msg_dds__Array4m__desc;
+  }
+#endif
+
+  static std::string topic_name()
+  {
+    return std::string("Array4m");
+  }
+};
+
 class Struct16
 {
 public:
@@ -988,7 +1020,7 @@ public:
 ///  \endcond
 
 using TopicTypeList = boost::mpl::list<Array1k, Array4k, Array16k, Array32k, Array60k, Array1m,
-    Array2m,
+    Array2m, Array4m,
     Struct16, Struct256, Struct4k, Struct32k, PointCloud512k, PointCloud1m, PointCloud2m,
     PointCloud4m,
     Range, NavSatFix, RadarDetection, RadarTrack>;
