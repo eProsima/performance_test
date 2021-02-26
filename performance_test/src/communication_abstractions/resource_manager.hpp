@@ -80,6 +80,11 @@ public:
   eprosima::fastrtps::Participant * fastrtps_participant() const;
 #endif
 
+#ifdef PERFORMANCE_TEST_FASTDDSS_ENABLED
+  /// Returns FastRTPS participant.
+  eprosima::fastdds::dds::DomainParticipant * fastdds_participant() const;
+#endif
+
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   /// Returns Connext DDS Micro participant.
   DDSDomainParticipant * connext_DDS_micro_participant() const;
