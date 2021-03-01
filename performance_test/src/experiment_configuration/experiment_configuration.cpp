@@ -213,6 +213,16 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       throw std::invalid_argument(
               "You must compile with FastRTPS support to enable it as communication mean.");
 #endif
+    } else if (vm["communication"].as<std::string>() == "FastDDS") {
+#ifdef PERFORMANCE_TEST_FASTDDSS_ENABLED
+      m_com_mean = CommunicationMean::FASTDDSS;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "FASTDDSS";
+      #endif
+#else
+      throw std::invalid_argument(
+              "You must compile with FastDDS support to enable it as communication mean.");
+#endif
     } else if (vm["communication"].as<std::string>() == "ConnextDDSMicro") {
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
       m_com_mean = CommunicationMean::CONNEXTDDSMICRO;

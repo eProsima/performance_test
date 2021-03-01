@@ -79,6 +79,36 @@
   #include <fast_rtps/RadarTrack_PubSubTypes.h>
 #endif
 
+// FastRTPS Types:
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  #include <fast_dds/Array1k_PubSubTypes.h>
+  #include <fast_dds/Array4k_PubSubTypes.h>
+  #include <fast_dds/Array16k_PubSubTypes.h>
+  #include <fast_dds/Array32k_PubSubTypes.h>
+  #include <fast_dds/Array60k_PubSubTypes.h>
+  #include <fast_dds/Array1m_PubSubTypes.h>
+  #include <fast_dds/Array2m_PubSubTypes.h>
+  #include <fast_dds/Array4m_PubSubTypes.h>
+  #include <fast_dds/Array8m_PubSubTypes.h>
+
+  #include <fast_dds/Struct16_PubSubTypes.h>
+  #include <fast_dds/Struct256_PubSubTypes.h>
+  #include <fast_dds/Struct4k_PubSubTypes.h>
+  #include <fast_dds/Struct32k_PubSubTypes.h>
+
+  #include <fast_dds/PointCloud512k_PubSubTypes.h>
+  #include <fast_dds/PointCloud1m_PubSubTypes.h>
+  #include <fast_dds/PointCloud2m_PubSubTypes.h>
+  #include <fast_dds/PointCloud4m_PubSubTypes.h>
+  #include <fast_dds/PointCloud8m_PubSubTypes.h>
+
+  #include <fast_dds/Range_PubSubTypes.h>
+  #include <fast_dds/NavSatFix_PubSubTypes.h>
+
+  #include <fast_dds/RadarDetection_PubSubTypes.h>
+  #include <fast_dds/RadarTrack_PubSubTypes.h>
+#endif
+
 // Connext DDS Micro Types:
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   #include <performance_test/msg/dds_connext_micro_typefiles/Array1k_Support.h>
@@ -183,7 +213,7 @@ class Array1k
 public:
   using RosType = performance_test::msg::Array1k;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array1k_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -222,7 +252,7 @@ class Array4k
 public:
   using RosType = performance_test::msg::Array4k;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array4k_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -262,7 +292,7 @@ class Array16k
 public:
   using RosType = performance_test::msg::Array16k;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array16k_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -302,7 +332,7 @@ class Array32k
 public:
   using RosType = performance_test::msg::Array32k;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array32k_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -341,7 +371,7 @@ class Array60k
 public:
   using RosType = performance_test::msg::Array60k;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array60k_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -380,7 +410,7 @@ class Array1m
 public:
   using RosType = performance_test::msg::Array1m;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array1m_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -419,7 +449,7 @@ class Array2m
 public:
   using RosType = performance_test::msg::Array2m;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array2m_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -458,7 +488,7 @@ class Array4m
 public:
   using RosType = performance_test::msg::Array4m;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array4m_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -497,7 +527,7 @@ class Array8m
 public:
   using RosType = performance_test::msg::Array8m;
 
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Array8m_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -535,7 +565,7 @@ class Struct16
 {
 public:
   using RosType = performance_test::msg::Struct16;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Struct16_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -574,7 +604,7 @@ class Struct256
 {
 public:
   using RosType = performance_test::msg::Struct256;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Struct256_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -613,7 +643,7 @@ class Struct4k
 {
 public:
   using RosType = performance_test::msg::Struct4k;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Struct4k_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -651,7 +681,7 @@ class Struct32k
 {
 public:
   using RosType = performance_test::msg::Struct32k;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Struct32k_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -690,7 +720,7 @@ class PointCloud512k
 {
 public:
   using RosType = performance_test::msg::PointCloud512k;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::PointCloud512k_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -729,7 +759,7 @@ class PointCloud1m
 {
 public:
   using RosType = performance_test::msg::PointCloud1m;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::PointCloud1m_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -768,7 +798,7 @@ class PointCloud2m
 {
 public:
   using RosType = performance_test::msg::PointCloud2m;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::PointCloud2m_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -807,7 +837,7 @@ class PointCloud4m
 {
 public:
   using RosType = performance_test::msg::PointCloud4m;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::PointCloud4m_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -846,7 +876,7 @@ class PointCloud8m
 {
 public:
   using RosType = performance_test::msg::PointCloud8m;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::PointCloud8m_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -885,7 +915,7 @@ class Range
 {
 public:
   using RosType = performance_test::msg::Range;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::Range_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -924,7 +954,7 @@ class NavSatFix
 {
 public:
   using RosType = performance_test::msg::NavSatFix;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::NavSatFix_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -963,7 +993,7 @@ class RadarDetection
 {
 public:
   using RosType = performance_test::msg::RadarDetection;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::RadarDetection_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif
@@ -1002,7 +1032,7 @@ class RadarTrack
 {
 public:
   using RosType = performance_test::msg::RadarTrack;
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
   using EprosimaTopicType = performance_test_msgs::msg::dds_::RadarTrack_PubSubType;
   using EprosimaType = typename EprosimaTopicType::type;
 #endif

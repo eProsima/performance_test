@@ -30,6 +30,9 @@ enum class CommunicationMean
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   , FASTRTPS
 #endif
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  , FASTDDS
+#endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   , CONNEXTDDSMICRO
 #endif
@@ -55,6 +58,10 @@ inline std::ostream & operator<<(std::ostream & stream, const CommunicationMean 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   } else if (cm == CommunicationMean::FASTRTPS) {
     return stream << "FASTRTPS";
+#endif
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  } else if (cm == CommunicationMean::FASTDDS) {
+    return stream << "FASTDDS";
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   } else if (cm == CommunicationMean::CONNEXTDDSMICRO) {

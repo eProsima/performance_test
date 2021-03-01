@@ -14,8 +14,14 @@
 
 #include "resource_manager.hpp"
 
-#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) && !defined(USE_LEGACY_QOS_API)
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   #include <fastrtps/rtps/attributes/RTPSParticipantAttributes.h>
+#endif
+
+#if defined(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  #include <fastdds/dds/domain/qos/DomainParticipantQos.hpp>
+  #include <fastdds/dds/domain/DomainParticipant.hpp>
+  #include <fastdds/dds/domain/DomainParticipantFactory.hpp>
 #endif
 
 #include <cstdlib>
@@ -99,6 +105,33 @@ eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
       m_fastrtps_participant = eprosima::fastrtps::Domain::createParticipant(PParam);
     }
     result = m_fastrtps_participant;
+  }
+  return result;
+}
+#endif
+
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant() const
+{
+  std::lock_guard<std::mutex> lock(m_global_mutex);
+
+  eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
+
+  eprosima::fastdds::dds::DomainParticipant * result = nullptr;
+  eprosima::fastdds::dds::DomainParticipantQos p_qos; // load default participant qos
+
+  p_qos.transport().send_socket_buffer_size = 1048576; // TODO(eprosima) check: hardcoded in old version
+  p_qos.transport().listen_socket_buffer_size = 4194304; // TODO(eprosima) check: hardcoded in old version
+
+  p_qos.name("performance_test_fastRTPS");
+
+  if (!m_ec.use_single_participant()) {
+    result = eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->create_participant(m_ec.dds_domain_id(), p_qos);
+  } else {
+    if (!m_fastdds_participant) {
+      m_fastdds_participant = eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->create_participant(m_ec.dds_domain_id(), p_qos);
+    }
+    result = m_fastdds_participant;
   }
   return result;
 }

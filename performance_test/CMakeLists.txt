@@ -79,6 +79,17 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   include_directories(${FAST_RTPS_IDL_INCLUDE_DIR})
 endif()
 
+# FastDDS
+option(PERFORMANCE_TEST_FASTDDS_ENABLED "Enable FastDDS" OFF)
+
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  find_package(fastrtps_cmake_module QUIET REQUIRED)
+  find_package(FastRTPS QUIET REQUIRED)
+  add_definitions(-DPERFORMANCE_TEST_FASTDDS_ENABLED)
+  add_subdirectory(src/idlgen/fast_dds)
+  include_directories(${FAST_DDS_IDL_INCLUDE_DIR})
+endif()
+
 # RTI Connext Micro
 option(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED "Option to enable Connext DDS Micro plugin. The
 plugin can only work if ApexOS is present with RTI Connext Micro, otherwise it will fail." OFF)
@@ -217,6 +228,10 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   list(APPEND sources src/communication_abstractions/fast_rtps_communicator.hpp)
 endif()
 
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  list(APPEND sources src/communication_abstractions/fast_dds_communicator.hpp)
+endif()
+
 if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
   list(APPEND sources src/communication_abstractions/connext_dds_micro_communicator.hpp)
 endif()
@@ -318,6 +333,13 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   target_link_libraries(${EXE_NAME}
       ${FastRTPS_LIBRARIES}
       fast_rtps_idl
+      fastcdr)
+endif()
+
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  target_link_libraries(${EXE_NAME}
+      ${FastDDS_LIBRARIES}
+      fast_dds_idl
       fastcdr)
 endif()
 
