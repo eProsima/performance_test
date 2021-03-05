@@ -215,9 +215,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #endif
     } else if (vm["communication"].as<std::string>() == "FastDDS") {
 #ifdef PERFORMANCE_TEST_FASTDDSS_ENABLED
-      m_com_mean = CommunicationMean::FASTDDSS;
+      m_com_mean = CommunicationMean::FASTDDS;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "FASTDDSS";
+      m_com_mean_str = "FASTDDS";
       #endif
 #else
       throw std::invalid_argument(
