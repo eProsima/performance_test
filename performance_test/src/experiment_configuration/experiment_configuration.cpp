@@ -214,7 +214,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
               "You must compile with FastRTPS support to enable it as communication mean.");
 #endif
     } else if (vm["communication"].as<std::string>() == "FastDDS") {
-#ifdef PERFORMANCE_TEST_FASTDDSS_ENABLED
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
       m_com_mean = CommunicationMean::FASTDDS;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "FASTDDS";
