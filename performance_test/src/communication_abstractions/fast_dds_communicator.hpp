@@ -26,6 +26,7 @@
 #include <fastdds/dds/subscriber/DataReader.hpp>
 #include <fastdds/dds/subscriber/SampleInfo.hpp>
 #include <fastdds/dds/subscriber/qos/DataReaderQos.hpp>
+#include <fastdds/dds/subscriber/qos/SubscriberQos.hpp>
 
 #include <atomic>
 
@@ -139,11 +140,6 @@ public:
     m_topic_type(new TopicType())
   {
     m_participant = ResourceManager::get().fastdds_participant();
-    if (m_ec.use_single_participant()) {
-      m_topic_type.register_type(m_participant);
-    } else {
-      m_topic_type.register_type(m_participant);
-    }
   }
 
   /**
@@ -159,6 +155,12 @@ public:
     if (!m_topic)
     {
       create_topic();
+    }
+
+    if (!m_publisher)
+    {
+      eprosima::fastdds::dds::PublisherQos pub_qos;
+      m_publisher = m_participant->create_publisher(pub_qos);
     }
 
     if (!m_datawriter) {
@@ -198,6 +200,12 @@ public:
       create_topic();
     }
 
+    if (!m_subscriber)
+    {
+      eprosima::fastdds::dds::SubscriberQos sub_qos;
+      m_subscriber = m_participant->create_subscriber(sub_qos);
+    }
+
     if (!m_datareader) {
       const FastDDSQOSAdapter qos(m_ec.qos());
 
@@ -226,7 +234,6 @@ public:
                   std::to_string(m_data.time_())
           );
         }
-
 
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
           unlock();
@@ -268,7 +275,17 @@ private:
 
   void create_topic()
   {
-    m_topic = m_participant->create_topic(m_topic_type->getName(), Topic::topic_name() + m_ec.pub_topic_postfix(), eprosima::fastdds::dds::TOPIC_QOS_DEFAULT);
+    if (!m_topic)
+    {
+      // Register type in participant (if it is already registered nothing happens)
+      m_topic_type.register_type(m_participant);
+
+      // Register topic in participant
+      m_topic = m_participant->create_topic(
+        Topic::topic_name() + m_ec.pub_topic_postfix(),
+        m_topic_type->getName(),
+        eprosima::fastdds::dds::TOPIC_QOS_DEFAULT);
+    }
   }
 };
 

@@ -123,7 +123,7 @@ eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant
   p_qos.transport().send_socket_buffer_size = 1048576; // TODO(eprosima) check: hardcoded in old version
   p_qos.transport().listen_socket_buffer_size = 4194304; // TODO(eprosima) check: hardcoded in old version
 
-  p_qos.name("performance_test_fastRTPS");
+  p_qos.name("performance_test_fastDDS");
 
   if (!m_ec.use_single_participant()) {
     result = eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->create_participant(m_ec.dds_domain_id(), p_qos);
