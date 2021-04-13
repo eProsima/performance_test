@@ -56,7 +56,7 @@ if(${osrf_testing_tools_cpp_FOUND})
 endif()
 
 # Dashing version looks like 0.7.X.
-if(${rclcpp_VERSION_MINOR} LESS 8)
+if(${rclcpp_VERSION_MAJOR} LESS 1 AND ${rclcpp_VERSION_MINOR} LESS 8)
   message(STATUS "ROS Dashing detected")
   add_definitions(-DUSE_LEGACY_QOS_API)
 endif()
@@ -79,6 +79,17 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   include_directories(${FAST_RTPS_IDL_INCLUDE_DIR})
 endif()
 
+# FastDDS
+option(PERFORMANCE_TEST_FASTDDS_ENABLED "Enable FastDDS" OFF)
+
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  find_package(fastrtps_cmake_module QUIET REQUIRED)
+  find_package(FastRTPS QUIET REQUIRED)
+  add_definitions(-DPERFORMANCE_TEST_FASTDDS_ENABLED)
+  add_subdirectory(src/idlgen/fast_dds)
+  include_directories(${FAST_DDS_IDL_INCLUDE_DIR})
+endif()
+
 # RTI Connext Micro
 option(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED "Option to enable Connext DDS Micro plugin. The
 plugin can only work if ApexOS is present with RTI Connext Micro, otherwise it will fail." OFF)
@@ -95,21 +106,18 @@ endif()
 
 
 # CycloneDDS
-option(PERFORMANCE_TEST_FORCE_CYCLONEDDS "Require Cyclone DDS to be available, fail otherwise" OFF)
-
-if(PERFORMANCE_TEST_FORCE_CYCLONEDDS)
+option(PERFORMANCE_TEST_CYCLONEDDS_ENABLED "Enable CycloneDDS" OFF)
+if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   find_package(CycloneDDS REQUIRED)
-else()
-  find_package(CycloneDDS QUIET)
-endif()
-if(CycloneDDS_FOUND)
-  set(PERFORMANCE_TEST_CYCLONEDDS_ENABLED TRUE)
   add_definitions(-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   add_subdirectory(src/idlgen/cyclonedds)
   include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
 endif()
 
-# ROS2 Waitset
+# ROS2 Callback and Executor
+option(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED "Option to enable the Callback and Executor Plugin." ON)
+
+# Apex.OS Waitset and Polling Subscription
 option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
   The plugin can only work if ApexOS is present, otherwise it will fail." OFF)
 
@@ -129,38 +137,46 @@ set(${PROJECT_NAME}_HEADERS
     src/experiment_configuration/experiment_configuration.hpp
     src/experiment_execution/analysis_result.hpp)
 
+option(IDL_MESSAGES_ENABLED "Use the .idl files in the src/msg folder, instead of the .msg files" OFF)
+
+if(IDL_MESSAGES_ENABLED)
+  set(MESSAGE_FILE_EXTENSION "idl")
+else()
+  set(MESSAGE_FILE_EXTENSION "msg")
+endif()
+
 rosidl_generate_interfaces(${PROJECT_NAME}
-    "src/msg/Array1k.msg"
-    "src/msg/Array4k.msg"
-    "src/msg/Array16k.msg"
-    "src/msg/Array32k.msg"
-    "src/msg/Array60k.msg"
-    "src/msg/Array1m.msg"
-    "src/msg/Array2m.msg"
-    "src/msg/Array4m.msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8m.${MESSAGE_FILE_EXTENSION}"
 
-    "src/msg/Struct16.msg"
-    "src/msg/Struct256.msg"
-    "src/msg/Struct4k.msg"
-    "src/msg/Struct32k.msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32k.${MESSAGE_FILE_EXTENSION}"
 
-    "src/msg/PointCloud1m.msg"
-    "src/msg/PointCloud2m.msg"
-    "src/msg/PointCloud4m.msg"
-    "src/msg/PointCloud8m.msg"
-    "src/msg/PointCloud512k.msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512k.${MESSAGE_FILE_EXTENSION}"
 
-    "src/msg/NavSatStatus.msg"
-    "src/msg/NavSatFix.msg"
-    "src/msg/RadarDetection.msg"
-    "src/msg/RadarTrack.msg"
-    "src/msg/Range.msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatus.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFix.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetection.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrack.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Range.${MESSAGE_FILE_EXTENSION}"
 
-    "src/msg/Point.msg"
-    "src/msg/Point32.msg"
-    "src/msg/Polygon.msg"
-    "src/msg/Vector3.msg"
-
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Polygon.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3.${MESSAGE_FILE_EXTENSION}"
 
     DEPENDENCIES builtin_interfaces std_msgs sensor_msgs)
 
@@ -170,8 +186,6 @@ set(sources
     src/communication_abstractions/communicator.cpp
     src/communication_abstractions/resource_manager.cpp
     src/communication_abstractions/resource_manager.hpp
-    src/communication_abstractions/ros2_communicator.hpp
-    src/communication_abstractions/ros2_callback_communicator.hpp
     src/experiment_configuration/topics.hpp
     src/data_running/data_runner.hpp
     src/data_running/data_runner_base.hpp
@@ -188,6 +202,7 @@ set(sources
     src/utilities/spin_lock.hpp
     src/utilities/statistics_tracker.hpp
     src/utilities/cpu_usage_tracker.hpp
+    src/utilities/qnx_res_usage.hpp
 )
 
 if(PERFORMANCE_TEST_RT_ENABLED)
@@ -195,30 +210,38 @@ if(PERFORMANCE_TEST_RT_ENABLED)
   list(APPEND sources src/utilities/rt_enabler.hpp)
 endif()
 
+if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
+  list(APPEND sources src/communication_abstractions/ros2_callback_communicator.hpp)
+endif()
+
 if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
   add_definitions(-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/ros2_waitset_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/ros2_waitset_communicator.hpp)
+endif()
+
+if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED OR PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
+  list(APPEND sources src/communication_abstractions/ros2_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/fast_rtps_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/fast_rtps_communicator.hpp)
+endif()
+
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  list(APPEND sources src/communication_abstractions/fast_dds_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/connext_dds_micro_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/connext_dds_micro_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/cyclonedds_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/cyclonedds_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/opendds_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/opendds_communicator.hpp)
 endif()
 
 # Use ODB support to create SQL database
@@ -282,6 +305,10 @@ target_link_libraries(${EXE_NAME}
     ${OPTIONAL_LIBRARIES})
 
 if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
+  foreach(header ${${PROJECT_NAME}_HEADERS})
+    get_filename_component(target_suffix ${header} NAME)
+    add_dependencies(${EXE_NAME} "generate_odb_${target_suffix}")
+  endforeach()
   target_link_libraries(${EXE_NAME} ${ODB_LIBRARIES})
   target_include_directories(${EXE_NAME}
       PRIVATE
@@ -306,6 +333,13 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   target_link_libraries(${EXE_NAME}
       ${FastRTPS_LIBRARIES}
       fast_rtps_idl
+      fastcdr)
+endif()
+
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  target_link_libraries(${EXE_NAME}
+      ${FastDDS_LIBRARIES}
+      fast_dds_idl
       fastcdr)
 endif()
 
