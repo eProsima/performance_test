@@ -115,10 +115,12 @@ eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant
 {
   std::lock_guard<std::mutex> lock(m_global_mutex);
 
+  // Load profiles
   eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
+  DomainParticipantFactory::get_instance()->load_profiles();
+  DomainParticipantQos p_qos = DomainParticipantFactory::get_instance()->get_default_participant_qos();
 
   eprosima::fastdds::dds::DomainParticipant * result = nullptr;
-  eprosima::fastdds::dds::DomainParticipantQos p_qos; // load default participant qos
 
   p_qos.transport().send_socket_buffer_size = 1048576; // TODO(eprosima) check: hardcoded in old version
   p_qos.transport().listen_socket_buffer_size = 4194304; // TODO(eprosima) check: hardcoded in old version
