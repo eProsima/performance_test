@@ -116,9 +116,11 @@ eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant
   std::lock_guard<std::mutex> lock(m_global_mutex);
 
   // Load profiles
-  eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
-  DomainParticipantFactory::get_instance()->load_profiles();
-  DomainParticipantQos p_qos = DomainParticipantFactory::get_instance()->get_default_participant_qos();
+  // eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
+
+  auto factory = eprosima::fastdds::dds::DomainParticipantFactory::get_instance();
+  factory->load_profiles();
+  auto p_qos = factory->get_default_participant_qos();
 
   eprosima::fastdds::dds::DomainParticipant * result = nullptr;
 
@@ -128,10 +130,10 @@ eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant
   p_qos.name("performance_test_fastDDS");
 
   if (!m_ec.use_single_participant()) {
-    result = eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->create_participant(m_ec.dds_domain_id(), p_qos);
+    result = factory->create_participant(m_ec.dds_domain_id(), p_qos);
   } else {
     if (!m_fastdds_participant) {
-      m_fastdds_participant = eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->create_participant(m_ec.dds_domain_id(), p_qos);
+      m_fastdds_participant = factory->create_participant(m_ec.dds_domain_id(), p_qos);
     }
     result = m_fastdds_participant;
   }

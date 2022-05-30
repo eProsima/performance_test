@@ -230,7 +230,7 @@ public:
     FASTDDS_SEQUENCE(DataSeq, DataType);
     DataSeq data_seq;
     while (m_datareader->take(data_seq, infos) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK) {
-      for (LoanableCollection::size_type i = 0; i < data_seq.length(); ++i) {
+      for (eprosima::fastdds::dds::LoanableCollection::size_type i = 0; i < data_seq.length(); ++i) {
         if (infos[i].valid_data) {
           if (m_prev_timestamp >= data_seq[i].time_()) {
             throw std::runtime_error(
