@@ -15,6 +15,7 @@
 #ifndef COMMUNICATION_ABSTRACTIONS__FAST_DDS_COMMUNICATOR_HPP_
 #define COMMUNICATION_ABSTRACTIONS__FAST_DDS_COMMUNICATOR_HPP_
 
+#include <fastdds/dds/core/LoanableSequence.hpp>
 #include <fastdds/dds/domain/DomainParticipant.hpp>
 #include <fastdds/dds/topic/TopicDescription.hpp>
 #include <fastdds/dds/topic/qos/TopicQos.hpp>
@@ -184,6 +185,7 @@ public:
     unlock();
     m_datawriter->write(static_cast<void *>(&data));
   }
+
   /**
    * \brief Reads received data from DDS.
    *
@@ -224,28 +226,34 @@ public:
     m_datareader->wait_for_unread_message(eprosima::fastrtps::Duration_t(120)); // max 2 minutes by default
     lock();
 
-    while (m_datareader->take_next_sample(&m_data, &m_info) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK) {
-      if (m_info.instance_state == eprosima::fastdds::dds::ALIVE_INSTANCE_STATE) {
-        if (m_prev_timestamp >= m_data.time_()) {
-          throw std::runtime_error(
-                  "Data consistency violated. Received sample with not strictly "
-                  "older timestamp. Time diff: " + std::to_string(
-                    m_data.time_() - m_prev_timestamp) + " Data Time: " +
-                  std::to_string(m_data.time_())
-          );
-        }
-
-        if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-          unlock();
-          publish(m_data, std::chrono::nanoseconds(m_data.time_()));
-          lock();
-        } else {
-          m_prev_timestamp = m_data.time_();
-          update_lost_samples_counter(m_data.id_());
-          add_latency_to_statistics(m_data.time_());
-          increment_received();
+    eprosima::fastdds::dds::SampleInfoSeq infos;
+    FASTDDS_SEQUENCE(DataSeq, DataType);
+    DataSeq data_seq;
+    while (m_datareader->take(data_seq, infos) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK) {
+      for (LoanableCollection::size_type i = 0; i < data_seq.length(); ++i) {
+        if (infos[i].valid_data) {
+          if (m_prev_timestamp >= data_seq[i].time_()) {
+            throw std::runtime_error(
+                    "Data consistency violated. Received sample with not strictly "
+                    "older timestamp. Time diff: " + std::to_string(
+                      data_seq[i].time_() - m_prev_timestamp) + " Data Time: " +
+                    std::to_string(data_seq[i].time_())
+            );
+          }
+  
+          if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
+            unlock();
+            publish(data_seq[i], std::chrono::nanoseconds(data_seq[i].time_()));
+            lock();
+          } else {
+            m_prev_timestamp = data_seq[i].time_();
+            update_lost_samples_counter(data_seq[i].id_());
+            add_latency_to_statistics(data_seq[i].time_());
+            increment_received();
+          }
         }
       }
+      m_datareader->return_loan(data_seq, infos);
     }
 
     unlock();
@@ -266,10 +274,7 @@ private:
 
   eprosima::fastdds::dds::Topic* m_topic;
 
-  eprosima::fastdds::dds::SampleInfo m_info;
-
   eprosima::fastdds::dds::TypeSupport m_topic_type;
-  DataType m_data;
 
   static bool s_type_registered;
 
