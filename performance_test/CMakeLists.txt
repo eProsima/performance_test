@@ -329,17 +329,10 @@ if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
   endif()
 endif()
 
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
+if(PERFORMANCE_TEST_FASTRTPS_ENABLED OR PERFORMANCE_TEST_FASTDDS_ENABLED)
   target_link_libraries(${EXE_NAME}
       ${FastRTPS_LIBRARIES}
       fast_rtps_idl
-      fastcdr)
-endif()
-
-if(PERFORMANCE_TEST_FASTDDS_ENABLED)
-  target_link_libraries(${EXE_NAME}
-      ${FastDDS_LIBRARIES}
-      fast_dds_idl
       fastcdr)
 endif()
 
