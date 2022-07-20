@@ -28,7 +28,13 @@
 #include <fastdds/dds/subscriber/DataReaderListener.hpp>
 #include <fastdds/dds/subscriber/Subscriber.hpp>
 #include <fastdds/dds/subscriber/qos/DataReaderQos.hpp>
+#include <fastdds/dds/core/LoanableSequence.hpp>
+#ifdef CONST_SEQ_HEADER_REQUIRED
 #include <fastdds/dds/core/LoanableConstSequence.hpp>
+#endif
+#ifdef CONST_SEQ_MACRO_NOT_AVAILABLE
+#define FASTDDS_CONST_SEQUENCE FASTDDS_SEQUENCE
+#endif
 
 #include <atomic>
 
@@ -316,25 +322,29 @@ public:
     if (m_ec.is_zero_copy_transfer()) {
       FASTDDS_CONST_SEQUENCE(DataSeq, DataType);
       DataSeq data;
-      while (eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK == m_reader->take_next_instance(data, m_infos)) {
+      while (m_reader->take(data, m_infos) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK) 
+      {
         for (eprosima::fastdds::dds::LoanableCollection::size_type i = 0; i < m_infos.length(); ++i)
         {
           if (m_infos[i].valid_data)
           {
             m_data = data[i];
-            if (m_prev_timestamp >= m_data.time()) {
-            throw std::runtime_error(
-                    "Data consistency violated. Received sample with not strictly "
-                    "older timestamp. Time diff: " + std::to_string(
-                      m_data.time() - m_prev_timestamp) + " Data Time: " +
-                    std::to_string(m_data.time())
-            );
+            if (m_prev_timestamp >= m_data.time()) 
+            {
+              throw std::runtime_error(
+                      "Data consistency violated. Received sample with not strictly "
+                      "older timestamp. Time diff: " + std::to_string(
+                        m_data.time() - m_prev_timestamp) + " Data Time: " +
+                      std::to_string(m_data.time())
+              );
             }
             if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
               unlock();
               publish(m_data.time());
               lock();
-            } else {
+            } 
+            else 
+            {
               m_prev_timestamp = m_data.time();
               update_lost_samples_counter(m_data.id());
               add_latency_to_statistics(m_data.time());
@@ -345,27 +355,43 @@ public:
         m_reader->return_loan(data, m_infos);
       }
     } else {
-      while (eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK == m_reader->take_next_sample(static_cast<void *>(&m_data), &m_info)) {
-        if (m_info.instance_state == eprosima::fastdds::dds::InstanceStateKind::ALIVE_INSTANCE_STATE) {
-          if (m_prev_timestamp >= m_data.time()) {
-            throw std::runtime_error(
-                    "Data consistency violated. Received sample with not strictly "
-                    "older timestamp. Time diff: " + std::to_string(
-                      m_data.time() - m_prev_timestamp) + " Data Time: " +
-                    std::to_string(m_data.time())
-            );
-          }
-          if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-            unlock();
-            publish(m_data.time());
-            lock();
-          } else {
-            m_prev_timestamp = m_data.time();
-            update_lost_samples_counter(m_data.id());
-            add_latency_to_statistics(m_data.time());
-            increment_received();
+
+//      eprosima::fastdds::dds::SampleInfoSeq infos;
+      FASTDDS_SEQUENCE(DataSeq, DataType);
+      DataSeq data_seq;
+
+      while (m_reader->take(data_seq, m_infos) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK)
+      {
+        for (eprosima::fastdds::dds::LoanableCollection::size_type i = 0; i < data_seq.length(); ++i) 
+        {
+          if (m_infos[i].valid_data) 
+          {
+            if (m_prev_timestamp >= data_seq[i].time()) 
+            {
+              throw std::runtime_error(
+                      "Data consistency violated. Received sample with not strictly "
+                      "older timestamp. Time diff: " + std::to_string(
+                        data_seq[i].time() - m_prev_timestamp) + " Data Time: " +
+                      std::to_string(data_seq[i].time())
+              );
+            }
+
+            if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) 
+            {
+              unlock();
+              publish(data_seq[i].time());
+              lock();
+            } 
+            else 
+            {
+              m_prev_timestamp = data_seq[i].time();
+              update_lost_samples_counter(data_seq[i].id());
+              add_latency_to_statistics(data_seq[i].time());
+              increment_received();
+            }
           }
         }
+        m_reader->return_loan(data_seq, m_infos);
       }
     }
     unlock();
