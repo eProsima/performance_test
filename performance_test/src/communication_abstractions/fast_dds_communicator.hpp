@@ -319,32 +319,38 @@ public:
 
     m_reader->wait_for_unread_message(m_timeout);
     lock();
+
+    auto sample_process = [this](const DataType& sample) -> void
+    {
+      if (m_prev_timestamp >= sample.time()) 
+      {
+        throw std::runtime_error(
+                "Data consistency violated. Received sample with not strictly "
+                "older timestamp. Time diff: " + std::to_string(
+                  sample.time() - m_prev_timestamp) + " Data Time: " +
+                std::to_string(sample.time())
+        );
+      }
+      if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
+        unlock();
+        publish(sample.time());
+        lock();
+      } 
+      else 
+      {
+        m_prev_timestamp = sample.time();
+        update_lost_samples_counter(sample.id());
+        add_latency_to_statistics(sample.time());
+        increment_received();
+      }
+    };
+
     if (!m_ec.is_zero_copy_transfer()) {
       while (m_reader->take_next_sample(static_cast<void*>(&m_data), &m_info) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK)
       {
         if (m_info.valid_data)
         {
-          if (m_prev_timestamp >= m_data.time()) 
-          {
-            throw std::runtime_error(
-                    "Data consistency violated. Received sample with not strictly "
-                    "older timestamp. Time diff: " + std::to_string(
-                      m_data.time() - m_prev_timestamp) + " Data Time: " +
-                    std::to_string(m_data.time())
-            );
-          }
-          if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-            unlock();
-            publish(m_data.time());
-            lock();
-          } 
-          else 
-          {
-            m_prev_timestamp = m_data.time();
-            update_lost_samples_counter(m_data.id());
-            add_latency_to_statistics(m_data.time());
-            increment_received();
-          }
+          sample_process(m_data);
         }
       }
     } else {
@@ -357,29 +363,7 @@ public:
         {
           if (m_infos[i].valid_data) 
           {
-            if (m_prev_timestamp >= data_seq[i].time()) 
-            {
-              throw std::runtime_error(
-                      "Data consistency violated. Received sample with not strictly "
-                      "older timestamp. Time diff: " + std::to_string(
-                        data_seq[i].time() - m_prev_timestamp) + " Data Time: " +
-                      std::to_string(data_seq[i].time())
-              );
-            }
-
-            if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) 
-            {
-              unlock();
-              publish(data_seq[i].time());
-              lock();
-            } 
-            else 
-            {
-              m_prev_timestamp = data_seq[i].time();
-              update_lost_samples_counter(data_seq[i].id());
-              add_latency_to_statistics(data_seq[i].time());
-              increment_received();
-            }
+            sample_process(data_seq[i]);
           }
         }
         m_reader->return_loan(data_seq, m_infos);
