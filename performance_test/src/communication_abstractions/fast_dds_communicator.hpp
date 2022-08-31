@@ -215,16 +215,7 @@ public:
         throw std::runtime_error("Failed to create publisher! ");
       }
       // create topic
-      // common/src/eProsima/Fast-DDS/include/fastdds/dds/topic/qos/TopicQos.hpp
-      eprosima::fastdds::dds::TopicQos tqos = eprosima::fastdds::dds::TOPIC_QOS_DEFAULT;
-      // qst: difference between topicqos and writerqos?
-      // tqos.history(qos.history());
-      // tqos.resource_limits(qos.resource_limits());
-      // tqos.reliability(qos.reliability());
-      // tqos.durability(qos.durability());
-      if(!m_topic) {
-        m_topic = m_participant->create_topic(m_ec.topic_name() + m_ec.pub_topic_postfix(), m_topic_type->getName(), tqos);
-      }
+      create_topic();
       // create datawriter
       eprosima::fastdds::dds::DataWriterQos wqos = m_publisher->get_default_datawriter_qos();
       if(m_ec.is_zero_copy_transfer()){
@@ -286,16 +277,7 @@ public:
         throw std::runtime_error("Failed to create subscriber! ");
       }
       // create topic
-      // common/src/eProsima/Fast-DDS/include/fastdds/dds/topic/qos/TopicQos.hpp
-      eprosima::fastdds::dds::TopicQos tqos = eprosima::fastdds::dds::TOPIC_QOS_DEFAULT;
-      // qst: difference between topicqos and writerqos?
-      // tqos.history(qos.history());
-      // tqos.resource_limits(qos.resource_limits());
-      // tqos.reliability(qos.reliability());
-      // tqos.durability(qos.durability());
-      if(!m_topic) {
-        m_topic = m_participant->create_topic(m_ec.topic_name() + m_ec.pub_topic_postfix(), m_topic_type->getName(), tqos);
-      }
+      create_topic();
       // create datareader
       eprosima::fastdds::dds::DataReaderQos rqos = m_subscriber->get_default_datareader_qos();;
       if(m_ec.is_zero_copy_transfer()){
@@ -398,6 +380,29 @@ private:
     msg.time(time);
     msg.id(next_sample_id());
     ensure_fixed_size(msg);
+  }
+  
+  void create_topic()
+  {
+    auto topic_name = m_ec.topic_name() + m_ec.pub_topic_postfix();
+
+    lock();
+    if(!m_topic) {
+      auto existing_topic = m_participant->lookup_topicdescription(topic_name);
+      m_topic = dynamic_cast<eprosima::fastdds::dds::Topic*>(existing_topic);
+    }
+    
+    // common/src/eProsima/Fast-DDS/include/fastdds/dds/topic/qos/TopicQos.hpp
+    eprosima::fastdds::dds::TopicQos tqos = eprosima::fastdds::dds::TOPIC_QOS_DEFAULT;
+    // qst: difference between topicqos and writerqos?
+    // tqos.history(qos.history());
+    // tqos.resource_limits(qos.resource_limits());
+    // tqos.reliability(qos.reliability());
+    // tqos.durability(qos.durability());
+    if(!m_topic) {
+      m_topic = m_participant->create_topic(topic_name, m_topic_type->getName(), tqos);
+    }
+    unlock();
   }
 
   eprosima::fastrtps::Duration_t m_timeout;
