@@ -178,8 +178,8 @@ public:
   explicit FastDDSCommunicator(SpinLock & lock)
   : Communicator(lock),
     m_publisher(nullptr),
-    m_subscriber(nullptr),
     m_writer(nullptr),
+    m_subscriber(nullptr),
     m_reader(nullptr),
     m_topic(nullptr),
     m_topic_type(new TopicType())
