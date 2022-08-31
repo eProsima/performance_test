@@ -319,44 +319,35 @@ public:
 
     m_reader->wait_for_unread_message(m_timeout);
     lock();
-    if (m_ec.is_zero_copy_transfer()) {
-      FASTDDS_CONST_SEQUENCE(DataSeq, DataType);
-      DataSeq data;
-      while (m_reader->take(data, m_infos) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK) 
+    if (!m_ec.is_zero_copy_transfer()) {
+      while (m_reader->take_next_sample(static_cast<void*>(&m_data), &m_info) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK)
       {
-        for (eprosima::fastdds::dds::LoanableCollection::size_type i = 0; i < m_infos.length(); ++i)
+        if (m_info.valid_data)
         {
-          if (m_infos[i].valid_data)
+          if (m_prev_timestamp >= m_data.time()) 
           {
-            m_data = data[i];
-            if (m_prev_timestamp >= m_data.time()) 
-            {
-              throw std::runtime_error(
-                      "Data consistency violated. Received sample with not strictly "
-                      "older timestamp. Time diff: " + std::to_string(
-                        m_data.time() - m_prev_timestamp) + " Data Time: " +
-                      std::to_string(m_data.time())
-              );
-            }
-            if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-              unlock();
-              publish(m_data.time());
-              lock();
-            } 
-            else 
-            {
-              m_prev_timestamp = m_data.time();
-              update_lost_samples_counter(m_data.id());
-              add_latency_to_statistics(m_data.time());
-              increment_received();
-            }
+            throw std::runtime_error(
+                    "Data consistency violated. Received sample with not strictly "
+                    "older timestamp. Time diff: " + std::to_string(
+                      m_data.time() - m_prev_timestamp) + " Data Time: " +
+                    std::to_string(m_data.time())
+            );
+          }
+          if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
+            unlock();
+            publish(m_data.time());
+            lock();
+          } 
+          else 
+          {
+            m_prev_timestamp = m_data.time();
+            update_lost_samples_counter(m_data.id());
+            add_latency_to_statistics(m_data.time());
+            increment_received();
           }
         }
-        m_reader->return_loan(data, m_infos);
       }
     } else {
-
-//      eprosima::fastdds::dds::SampleInfoSeq infos;
       FASTDDS_SEQUENCE(DataSeq, DataType);
       DataSeq data_seq;
 
