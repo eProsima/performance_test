@@ -218,21 +218,15 @@ public:
       create_topic();
       // create datawriter
       eprosima::fastdds::dds::DataWriterQos wqos = m_publisher->get_default_datawriter_qos();
-      if(m_ec.is_zero_copy_transfer()){
-        wqos.history().depth = qos.history_depth();
-        wqos.durability().kind = eprosima::fastrtps::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
-        wqos.data_sharing().on("shared_directory");
-      } else {
-        wqos.history().kind = qos.history_kind();
-        wqos.history().depth = qos.history_depth();
-        wqos.resource_limits().max_samples = qos.resource_limits_samples();
-        wqos.resource_limits().allocated_samples = qos.resource_limits_samples();
-        wqos.reliable_writer_qos().times.heartbeatPeriod.seconds = 2;
-        wqos.reliable_writer_qos().times.heartbeatPeriod.fraction((200 * 1000 * 1000));
-        wqos.reliability().kind = qos.reliability_kind();
-        wqos.publish_mode().kind = qos.publish_mode_kind();
-        wqos.data_sharing().automatic();
-      }
+      wqos.history().kind = qos.history_kind();
+      wqos.history().depth = qos.history_depth();
+      wqos.resource_limits().max_samples = qos.resource_limits_samples();
+      wqos.resource_limits().allocated_samples = qos.resource_limits_samples();
+      wqos.reliable_writer_qos().times.heartbeatPeriod.seconds = 2;
+      wqos.reliable_writer_qos().times.heartbeatPeriod.fraction((200 * 1000 * 1000));
+      wqos.reliability().kind = qos.reliability_kind();
+      wqos.publish_mode().kind = qos.publish_mode_kind();
+      wqos.data_sharing().automatic();
       m_writer = m_publisher->create_datawriter(m_topic, wqos);
       // remain
       // wparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
@@ -279,20 +273,13 @@ public:
       // create topic
       create_topic();
       // create datareader
-      eprosima::fastdds::dds::DataReaderQos rqos = m_subscriber->get_default_datareader_qos();;
-      if(m_ec.is_zero_copy_transfer()){
-        rqos.history().depth = qos.history_depth();
-        rqos.reliability().kind = eprosima::fastrtps::ReliabilityQosPolicyKind::RELIABLE_RELIABILITY_QOS;
-        rqos.durability().kind = eprosima::fastrtps::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
-        rqos.data_sharing().on("shared_directory");
-      } else {
-        rqos.history().kind = qos.history_kind();
-        rqos.history().depth = qos.history_depth();
-        rqos.resource_limits().max_samples = qos.resource_limits_samples();
-        rqos.resource_limits().allocated_samples = qos.resource_limits_samples();
-        rqos.reliability().kind = qos.reliability_kind();
-        rqos.data_sharing().automatic();
-      }
+      eprosima::fastdds::dds::DataReaderQos rqos = m_subscriber->get_default_datareader_qos();
+      rqos.history().kind = qos.history_kind();
+      rqos.history().depth = qos.history_depth();
+      rqos.resource_limits().max_samples = qos.resource_limits_samples();
+      rqos.resource_limits().allocated_samples = qos.resource_limits_samples();
+      rqos.reliability().kind = qos.reliability_kind();
+      rqos.data_sharing().automatic();
       m_reader = m_subscriber->create_datareader(m_topic, rqos);
 
       // remain
