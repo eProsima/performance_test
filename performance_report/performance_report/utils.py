@@ -396,8 +396,6 @@ def generate_shmem_file_xml_fastdds(dir_path) -> str:
         data_writer.set("profile_name", "default publisher profile")
         data_writer.set("is_default_profile", "true")
         writer_qos = et.SubElement(data_writer, "qos")
-        publishMode = et.SubElement(writer_qos, "publishMode")
-        et.SubElement(publishMode, "kind").text = "ASYNCHRONOUS"
         writer_data_sharing = et.SubElement(writer_qos, "data_sharing")
         et.SubElement(writer_data_sharing, "kind").text = "AUTOMATIC"
         et.SubElement(data_writer, "historyMemoryPolicy").text = "PREALLOCATED_WITH_REALLOC"
