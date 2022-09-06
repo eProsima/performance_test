@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import subprocess
 import time
 import yaml
 
@@ -80,9 +81,10 @@ def run_experiment(cfg: ExperimentConfig, perf_test_exe_cmd, output_dir, overwri
     else:
         cli_args_sub, cli_args_pub = cfg.cli_args(output_dir)
         prepare_for_shmem(cfg, output_dir)
-        os.system(perf_test_exe_cmd + cli_args_sub + ' &')
+        sub_proc = subprocess.Popen(perf_test_exe_cmd + cli_args_sub, shell=True)
         time.sleep(1)
         os.system(perf_test_exe_cmd + cli_args_pub)
+        sub_proc.wait()
         teardown_from_shmem(cfg)
 
 
