@@ -35,7 +35,7 @@ def prepare_for_shmem(cfg: ExperimentConfig, output_dir):
     # TODO(flynneva): check cfg.com_mean if these are applicable
     if cfg.transport == TRANSPORT.ZERO_COPY or cfg.transport == TRANSPORT.SHMEM:
 
-        colorPrint("[Warning] RouDi is expected to already be running", cliColors.WARN)
+        warn_roudi = True
 
         if is_ros2_plugin(cfg.com_mean):
             if get_rmw_implementation_identifier() == "rmw_apex_middleware":
@@ -45,6 +45,7 @@ def prepare_for_shmem(cfg: ExperimentConfig, output_dir):
                 shmem_config_file = generate_shmem_file_xml_cyclonedds(output_dir)
                 os.environ["CYCLONEDDS_URI"] = shmem_config_file
             elif get_rmw_implementation_identifier() == "rmw_fastrtps_cpp":
+                warn_roudi = False
                 shmem_config_file = generate_shmem_file_xml_fastdds(output_dir)
                 os.environ["FASTRTPS_DEFAULT_PROFILES_FILE"] = shmem_config_file
                 os.environ["RMW_FASTRTPS_USE_QOS_FROM_XML"] = "1"
@@ -53,8 +54,14 @@ def prepare_for_shmem(cfg: ExperimentConfig, output_dir):
         elif cfg.com_mean == "CycloneDDS" or cfg.com_mean == "CycloneDDS-CXX":
             shmem_config_file = generate_shmem_file_xml_cyclonedds(output_dir)
             os.environ["CYCLONEDDS_URI"] = shmem_config_file
+        elif cfg.com_mean == "FastDDS":
+            warn_roudi = False
         else:
+            warn_roudi = False
             print("Unsupported com_mean: ", cfg.com_mean)
+        
+        if warn_roudi:
+            colorPrint("[Warning] RouDi is expected to already be running", cliColors.WARN)
 
 
 def teardown_from_shmem(cfg: ExperimentConfig):
