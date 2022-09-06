@@ -289,28 +289,31 @@ public:
     m_reader->wait_for_unread_message(m_timeout);
     lock();
 
-    auto sample_process = [this](const DataType& sample) -> void
+    auto sample_process = [this](const DataType& sample, const eprosima::fastdds::dds::SampleInfo& info) -> void
     {
-      if (m_prev_timestamp >= sample.time()) 
-      {
-        throw std::runtime_error(
-                "Data consistency violated. Received sample with not strictly "
-                "older timestamp. Time diff: " + std::to_string(
-                  sample.time() - m_prev_timestamp) + " Data Time: " +
-                std::to_string(sample.time())
-        );
-      }
-      if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-        unlock();
-        publish(sample.time());
-        lock();
-      } 
-      else 
-      {
-        m_prev_timestamp = sample.time();
-        update_lost_samples_counter(sample.id());
-        add_latency_to_statistics(sample.time());
-        increment_received();
+      auto sample_id = sample.id();
+      auto sample_time = sample.time();
+      
+      if (!m_ec.is_zero_copy_transfer() || m_reader->is_sample_valid(&sample, &info)) {
+        if (m_prev_timestamp >= sample_time) {
+          throw std::runtime_error(
+                  "Data consistency violated. Received sample with not strictly "
+                  "older timestamp. Time diff: " + std::to_string(
+                    sample_time - m_prev_timestamp) + " Data Time: " +
+                  std::to_string(sample_time)
+          );
+        }
+        if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
+          unlock();
+          publish(sample_time);
+          lock();
+        } 
+        else {
+          m_prev_timestamp = sample_time;
+          update_lost_samples_counter(sample_id);
+          add_latency_to_statistics(sample_time);
+          increment_received();
+        }
       }
     };
 
@@ -319,7 +322,7 @@ public:
       {
         if (m_info.valid_data)
         {
-          sample_process(m_data);
+          sample_process(m_data, m_info);
         }
       }
     } else {
@@ -330,9 +333,9 @@ public:
       {
         for (eprosima::fastdds::dds::LoanableCollection::size_type i = 0; i < data_seq.length(); ++i) 
         {
-          if (m_infos[i].valid_data) 
+          if (m_infos[i].valid_data)
           {
-            sample_process(data_seq[i]);
+            sample_process(data_seq[i], m_infos[i]);
           }
         }
         m_reader->return_loan(data_seq, m_infos);
