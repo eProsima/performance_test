@@ -210,6 +210,7 @@ public:
     if (!m_writer) {
       const FastDDSQOSAdapter qos(m_ec.qos());
       // create datawriter
+      m_publisher = ResourceManager::get().fastdds_resources(m_topic_type).publisher;
       eprosima::fastdds::dds::DataWriterQos wqos = m_publisher->get_default_datawriter_qos();
       wqos.history().kind = qos.history_kind();
       wqos.history().depth = qos.history_depth();
@@ -221,6 +222,11 @@ public:
       wqos.publish_mode().kind = qos.publish_mode_kind();
       wqos.data_sharing().automatic();
       m_writer = m_publisher->create_datawriter(m_topic, wqos);
+
+      if (m_writer == nullptr) {
+        throw std::runtime_error("failed to create DataWriter");
+      }
+      
       // remain
       // wparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
     }
@@ -259,6 +265,7 @@ public:
     if (!m_reader) {
       const FastDDSQOSAdapter qos(m_ec.qos());
       // create datareader
+      m_subscriber = ResourceManager::get().fastdds_resources(m_topic_type).subscriber;
       eprosima::fastdds::dds::DataReaderQos rqos = m_subscriber->get_default_datareader_qos();
       rqos.history().kind = qos.history_kind();
       rqos.history().depth = qos.history_depth();
@@ -268,6 +275,10 @@ public:
       rqos.data_sharing().automatic();
       m_reader = m_subscriber->create_datareader(m_topic, rqos);
 
+      if (m_reader == nullptr) {
+        throw std::runtime_error("failed to create DataReader");
+      }
+      
       // remain
       // rparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
     }
