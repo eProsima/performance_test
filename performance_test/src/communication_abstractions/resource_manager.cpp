@@ -44,7 +44,7 @@ namespace performance_test
 
 void ResourceManager::shutdown()
 {
-#if ( defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED) )
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   eprosima::fastrtps::Domain::stopAll();
 #endif
 #if ( defined(PERFORMANCE_TEST_ECAL_RAW_ENABLED) || defined(PERFORMANCE_TEST_ECAL_PROTO_ENABLED) )
