@@ -18,13 +18,16 @@
   #include <fastrtps/rtps/attributes/RTPSParticipantAttributes.h>
   #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
   #include <fastdds/rtps/transport/UDPv4TransportDescriptor.h>
+  #include <fastrtps/Domain.h>
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
   #include <fastdds/dds/domain/DomainParticipantFactory.hpp>
+  #include <fastdds/dds/domain/DomainParticipant.hpp>
+  #include <fastdds/dds/publisher/qos/PublisherQos.hpp>
+  #include <fastdds/dds/subscriber/qos/SubscriberQos.hpp>
   #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
   #include <fastdds/rtps/transport/UDPv4TransportDescriptor.h>
-  #include <fastrtps/Domain.h>
 #endif
 
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
@@ -46,6 +49,12 @@ void ResourceManager::shutdown()
 {
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   eprosima::fastrtps::Domain::stopAll();
+#endif
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  auto part = get().m_fastdds_resources.participant;
+  if (part) {
+    part->delete_contained_entities();
+  }
 #endif
 #if ( defined(PERFORMANCE_TEST_ECAL_RAW_ENABLED) || defined(PERFORMANCE_TEST_ECAL_PROTO_ENABLED) )
   eCAL::Finalize();
@@ -134,12 +143,11 @@ eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
-eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant() const
+const ResourceManager::FastDDSGlobalResources & ResourceManager::fastdds_resources(eprosima::fastdds::dds::TypeSupport type) const
 {
   std::lock_guard<std::mutex> lock(m_global_mutex);
 
-  if (!m_fastdds_participant) {
-    eprosima::fastdds::dds::DomainParticipant * result = nullptr;
+  if (!m_fastdds_resources.participant) {
     eprosima::fastdds::dds::DomainParticipantQos pqos;
 
     // xml currently not supported
@@ -148,10 +156,6 @@ eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant
 
     // basic setup
     // common/src/eProsima/Fast-DDS/src/cpp/fastdds/domain/DomainParticipantImpl.cpp
-    pqos.wire_protocol().builtin.discovery_config.discoveryProtocol = eprosima::fastrtps::rtps::DiscoveryProtocol_t::SIMPLE;
-    pqos.wire_protocol().builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
-    pqos.wire_protocol().builtin.discovery_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-    pqos.wire_protocol().builtin.discovery_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
     pqos.wire_protocol().builtin.discovery_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
     // tuning system network stack
     pqos.transport().send_socket_buffer_size = 1048576;
@@ -169,10 +173,32 @@ eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant
 
     pqos.name("performance_test_fastDDS");
 
-    m_fastdds_participant = eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->create_participant(m_ec.dds_domain_id(), pqos);
+    m_fastdds_resources.participant = eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->create_participant(m_ec.dds_domain_id(), pqos);
+    if (m_fastdds_resources.participant == nullptr) {
+      throw std::runtime_error("failed to create participant");
+    }
+
+    m_fastdds_resources.publisher = m_fastdds_resources.participant->create_publisher(eprosima::fastdds::dds::PUBLISHER_QOS_DEFAULT);
+    if (m_fastdds_resources.publisher == nullptr) {
+      throw std::runtime_error("failed to create publisher");
+    }
+
+    m_fastdds_resources.subscriber = m_fastdds_resources.participant->create_subscriber(eprosima::fastdds::dds::SUBSCRIBER_QOS_DEFAULT);
+    if (m_fastdds_resources.subscriber == nullptr) {
+      throw std::runtime_error("failed to create subscriber");
+    }
+
+    type.register_type(m_fastdds_resources.participant);
+    
+    auto topic_name = m_ec.topic_name() + m_ec.pub_topic_postfix();
+    m_fastdds_resources.topic = m_fastdds_resources.participant->create_topic(topic_name, type->getName(), eprosima::fastdds::dds::TOPIC_QOS_DEFAULT);
+    if (m_fastdds_resources.topic == nullptr) {
+      throw std::runtime_error("failed to create topic");
+    }
   }
-  return m_fastdds_participant;
+  return m_fastdds_resources;
 }
+
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED

@@ -24,6 +24,7 @@
 
 #ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
   #include <fastdds/dds/domain/DomainParticipant.hpp>
+  #include <fastdds/dds/topic/Topic.hpp>
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
@@ -100,8 +101,16 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
-  /// Returns FastDDS participant.
-  eprosima::fastdds::dds::DomainParticipant * fastdds_participant() const;
+  struct FastDDSGlobalResources
+  {
+    eprosima::fastdds::dds::DomainParticipant * participant;
+    eprosima::fastdds::dds::Publisher * publisher;
+    eprosima::fastdds::dds::Subscriber * subscriber;
+    eprosima::fastdds::dds::Topic * topic;
+  };
+  
+  /// Returns FastDDS resources.
+  const FastDDSGlobalResources& fastdds_resources(eprosima::fastdds::dds::TypeSupport type) const;
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
@@ -188,7 +197,7 @@ private:
     , m_fastrtps_participant(nullptr)
 #endif
 #ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
-    , m_fastdds_participant(nullptr)
+    , m_fastdds_resources{nullptr, nullptr, nullptr, nullptr}
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
     , m_connext_dds_micro_participant(nullptr)
@@ -217,7 +226,7 @@ private:
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
-  mutable eprosima::fastdds::dds::DomainParticipant * m_fastdds_participant;
+  mutable FastDDSGlobalResources m_fastdds_resources;
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED

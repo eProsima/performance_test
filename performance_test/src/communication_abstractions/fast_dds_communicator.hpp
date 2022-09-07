@@ -184,11 +184,12 @@ public:
     m_topic(nullptr),
     m_topic_type(new TopicType())
   {
-    m_participant = ResourceManager::get().fastdds_participant();
-    if (!s_type_registered) {
-      s_type_registered = true;
-      m_topic_type.register_type(m_participant);
-    }
+    const auto& resources = ResourceManager::get().fastdds_resources(m_topic_type);
+    m_participant = resources.participant;
+    m_subscriber = resources.subscriber;
+    m_publisher = resources.publisher;
+    m_topic = resources.topic;
+
     auto hz = static_cast<double>(this->m_ec.rate());
     auto period = std::chrono::duration<double>(1.0 / hz);
     auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(period);
@@ -208,14 +209,6 @@ public:
   {
     if (!m_writer) {
       const FastDDSQOSAdapter qos(m_ec.qos());
-      // create publisher
-      // include/fastdds/dds/publisher/qos/PublisherQos.hpp
-      m_publisher = m_participant->create_publisher(eprosima::fastdds::dds::PUBLISHER_QOS_DEFAULT);
-      if(!m_publisher) {
-        throw std::runtime_error("Failed to create publisher! ");
-      }
-      // create topic
-      create_topic();
       // create datawriter
       eprosima::fastdds::dds::DataWriterQos wqos = m_publisher->get_default_datawriter_qos();
       wqos.history().kind = qos.history_kind();
@@ -265,13 +258,6 @@ public:
   {
     if (!m_reader) {
       const FastDDSQOSAdapter qos(m_ec.qos());
-      // create subscriber
-      m_subscriber = m_participant->create_subscriber(eprosima::fastdds::dds::SUBSCRIBER_QOS_DEFAULT);
-      if(!m_subscriber) {
-        throw std::runtime_error("Failed to create subscriber! ");
-      }
-      // create topic
-      create_topic();
       // create datareader
       eprosima::fastdds::dds::DataReaderQos rqos = m_subscriber->get_default_datareader_qos();
       rqos.history().kind = qos.history_kind();
@@ -360,8 +346,6 @@ private:
   eprosima::fastdds::dds::SampleInfo m_info;
   eprosima::fastdds::dds::SampleInfoSeq m_infos;
 
-  static bool s_type_registered;
-
   eprosima::fastdds::dds::TypeSupport m_topic_type;
   DataType m_data;
 
@@ -372,34 +356,8 @@ private:
     ensure_fixed_size(msg);
   }
   
-  void create_topic()
-  {
-    auto topic_name = m_ec.topic_name() + m_ec.pub_topic_postfix();
-
-    lock();
-    if(!m_topic) {
-      auto existing_topic = m_participant->lookup_topicdescription(topic_name);
-      m_topic = dynamic_cast<eprosima::fastdds::dds::Topic*>(existing_topic);
-    }
-    
-    // common/src/eProsima/Fast-DDS/include/fastdds/dds/topic/qos/TopicQos.hpp
-    eprosima::fastdds::dds::TopicQos tqos = eprosima::fastdds::dds::TOPIC_QOS_DEFAULT;
-    // qst: difference between topicqos and writerqos?
-    // tqos.history(qos.history());
-    // tqos.resource_limits(qos.resource_limits());
-    // tqos.reliability(qos.reliability());
-    // tqos.durability(qos.durability());
-    if(!m_topic) {
-      m_topic = m_participant->create_topic(topic_name, m_topic_type->getName(), tqos);
-    }
-    unlock();
-  }
-
   eprosima::fastrtps::Duration_t m_timeout;
 };
-
-template<class Topic>
-bool FastDDSCommunicator<Topic>::s_type_registered = false;
 
 }  // namespace performance_test
 
