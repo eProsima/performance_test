@@ -14,8 +14,9 @@
 
 #include "data_runner_factory.hpp"
 
-#include <string>
 #include <memory>
+#include <string>
+#include <thread>
 
 #include <performance_test/generated_messages/messages.hpp>
 #include <performance_test/for_each.hpp>
@@ -179,6 +180,9 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
     throw std::runtime_error(
             "A topic with the requested name does not exist or communication mean not supported.");
   }
+  
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  
   return ptr;
 }
 
