@@ -93,6 +93,7 @@ def run_experiment(cfg: ExperimentConfig, perf_test_exe_cmd, output_dir, overwri
         os.system(perf_test_exe_cmd + cli_args_pub)
         sub_proc.wait()
         teardown_from_shmem(cfg)
+    os.system("rm /dev/shm/*fast*")
 
 
 def run_experiments(files: "list[str]", perf_test_exe_cmd, output_dir, overwrite: bool):
