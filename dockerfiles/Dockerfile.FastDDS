@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt remove -y ros-rolling-fastrtps && \
     apt-get install -y default-jdk cmake g++ python3-pip wget git libasio-dev libtinyxml2-dev libssl-dev libp11-dev libengine-pkcs11-openssl
 
-ARG FAST_DDS_VERSION=v2.6.0
+ARG FAST_DDS_VERSION=v2.6.2
 
 RUN source /opt/ros/rolling/setup.bash && \
     mkdir -p Fast-DDS_ws/src && \
