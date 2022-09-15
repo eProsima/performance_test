@@ -41,8 +41,9 @@ namespace performance_test
 class FastRTPSQOSAdapter
 {
 public:
-  explicit FastRTPSQOSAdapter(const QOSAbstraction qos)
+  explicit FastRTPSQOSAdapter(const QOSAbstraction qos, bool interprocess)
   : m_qos(qos)
+  , m_interprocess(interprocess)
   {}
   
   void apply(eprosima::fastdds::dds::DataWriterQos & wqos) const
@@ -61,6 +62,9 @@ public:
   
 private:
 
+  const QOSAbstraction m_qos;
+  const bool m_interprocess;
+
   template<typename EntityQos>
   void apply_common(EntityQos & eqos) const
   {
@@ -71,6 +75,7 @@ private:
     eqos.reliability().kind = reliability();
     eqos.durability().kind = durability();
     eqos.data_sharing().automatic();
+    if (!m_interprocess) eqos.data_sharing().off();
   }
 
   inline eprosima::fastrtps::ReliabilityQosPolicyKind reliability() const
@@ -131,9 +136,6 @@ private:
       return eprosima::fastrtps::PublishModeQosPolicyKind::ASYNCHRONOUS_PUBLISH_MODE;
     }
   }
-
-private:
-  const QOSAbstraction m_qos;
 };
 
 template<class Topic>
@@ -181,7 +183,7 @@ private:
     const ExperimentConfiguration & ec
   )
   {
-    const FastRTPSQOSAdapter qos(ec.qos());
+    const FastRTPSQOSAdapter qos(ec.qos(), ec.number_of_publishers() == 0 || ec.number_of_subscribers() == 0);
     
     eprosima::fastdds::dds::DataWriterQos wqos;
     resources.publisher->get_default_datawriter_qos(wqos);
@@ -256,7 +258,7 @@ private:
     const ExperimentConfiguration & ec
   )
   {
-    const FastRTPSQOSAdapter qos(ec.qos());
+    const FastRTPSQOSAdapter qos(ec.qos(), ec.number_of_publishers() == 0 || ec.number_of_subscribers() == 0);
     
     eprosima::fastdds::dds::DataReaderQos rqos;
     resources.subscriber->get_default_datareader_qos(rqos);
