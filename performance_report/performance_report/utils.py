@@ -164,7 +164,7 @@ class ExperimentConfig:
             elif self.com_mean == "CycloneDDS" or self.com_mean == "CycloneDDS-CXX":
                 commands.extend(generate_commands_xml(output_dir))
                 cleanup_commands.append('unset CYCLONEDDS_URI')
-            elif self.com_mean == "iceoryx":
+            elif self.com_mean == "iceoryx" or self.com_mean == "FastRTPS":
                 pass
             else:
                 print("Unsupported com_mean: ", self.com_mean)

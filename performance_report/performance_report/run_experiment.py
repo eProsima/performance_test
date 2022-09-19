@@ -45,7 +45,7 @@ def prepare_for_shmem(cfg: ExperimentConfig, output_dir):
         elif cfg.com_mean == "CycloneDDS" or cfg.com_mean == "CycloneDDS-CXX":
             shmem_config_file = generate_shmem_file_xml(output_dir)
             os.environ["CYCLONEDDS_URI"] = shmem_config_file
-        elif cfg.com_mean == "iceoryx":
+        elif cfg.com_mean == "iceoryx" or cfg.com_mean == "FastRTPS":
             pass
         else:
             print("Unsupported com_mean: ", cfg.com_mean)
